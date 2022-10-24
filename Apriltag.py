@@ -3,7 +3,6 @@ import cv2 as cv
 import numpy as np
 from math import degrees, atan, sqrt
 
-
 class BoxDefination():
     def __init__(self, mtx, dist):
         self.mtx = mtx
@@ -16,8 +15,7 @@ class BoxDefination():
 
     def findTags(self, img):
         gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-        tags = self.dectector.detect(
-            gray, estimate_tag_pose=True, camera_params=self.camera_params, tag_size=0.2)
+        tags = self.dectector.detect(gray, estimate_tag_pose=True, camera_params=self.camera_params, tag_size=0.2)
         if tags == None:
             return img
 
@@ -35,7 +33,7 @@ class BoxDefination():
             imgpoints = []
 
             (ptA, ptB, ptC, ptD) = tag.corners
-            print(tag.corners)
+            # print(tag.corners)
             ptA = (int(ptA[0]), int(ptA[1]))
             ptB = (int(ptB[0]), int(ptB[1]))
             ptC = (int(ptC[0]), int(ptC[1]))
@@ -52,14 +50,14 @@ class BoxDefination():
             pose_R = tag.pose_R
             pose_t = tag.pose_t
             tagID = tag.tag_id
-            print(pose_R)
-            print("----------------------------")
-            print(pose_t)
-            print("----------------------------")
+            # print(pose_R)
+            # print("----------------------------")
+            # print(pose_t)
+            # print("----------------------------")
 
             corner = self.tag_size/2
             objPoints = np.array(
-                [[-corner, corner, 0], [corner, corner, 0], [corner, -corner, 0], [-corner, -corner, 0]])
+                [[corner, 0, 0], [0, corner, 0], [0, 0, -corner], [0, 0, 0]])
 
             r11 = pose_R[0][0]
             r12 = pose_R[0][1]
@@ -71,10 +69,9 @@ class BoxDefination():
             r32 = pose_R[2][1]
             r33 = pose_R[2][2]
 
-            AprilTagPitch = round(
-                degrees(atan(-r31/sqrt((r32*r32)+(r33*r33)))), 3)
+            AprilTagPitch = round(degrees(atan(-r31/sqrt((r32*r32)+(r33*r33)))), 3)
             AprilTagRoll = round(degrees(atan(-r32/r33)), 3)
-            ApriTagYaw = round(degrees(atan(r21/r11)), 3)
+            AprilTagYaw = round(degrees(atan(r21/r11)), 3)
             AprilTagX = pose_t[0][0]
             AprilTagY = pose_t[1][0]
             AprilTagZ = pose_t[2][0]
@@ -90,24 +87,38 @@ class BoxDefination():
             cv.putText(img, f'{tagID}', center,
                        cv.FONT_HERSHEY_SIMPLEX, 5, (0, 255, 255))
 
-            print(AprilTagPitch)
+            # print(AprilTagPitch)
 
             # imgpts = np.zeros((3, 2))
 
             imgpts, jac = cv.projectPoints(
                 objPoints, rvec, tvec, self.mtx, self.dist)
-            print(imgpts)
+            # print(imgpts)
             imgpts = np.array(imgpts, dtype=np.int32)
             img = self.draw(img, center, imgpts)
 
+            rX = self.convertData2Measurement(AprilTagX)
+            rY = self.convertData2Measurement(AprilTagY)
+            rZ = self.convertData2Measurement(AprilTagZ)
+
+            # print(rX, rY, rZ)
+            # print(AprilTagYaw, AprilTagPitch, AprilTagRoll)
+
         return img
 
+    def convertData2Measurement(self, data):
+        return data/0.64*50
+
     def draw(self, img, center, imgpts):
-        img = cv.line(img, center, tuple(imgpts[0].ravel()), (255, 0, 0), 5)
-        img = cv.line(img, center, tuple(imgpts[1].ravel()), (0, 255, 0), 5)
-        img = cv.line(img, center, tuple(imgpts[2].ravel()), (0, 0, 255), 5)
+        img = cv.line(img, center, tuple(imgpts[0].ravel()), (0, 0, 255), 2)
+        img = cv.line(img, center, tuple(imgpts[1].ravel()), (0, 255, 0), 2)
+        img = cv.line(img, center, tuple(imgpts[2].ravel()), (255, 0, 0), 2)
         return img
 
     def findBox(self, img):
         results = self.detector.detect(img)
         pass
+    
+    def findPosition(self, img):
+        pass
+    

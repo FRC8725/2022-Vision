@@ -4,6 +4,7 @@ from networktables import NetworkTables
 import cv2 as cv
 import numpy as np
 import time
+import json
 
 import Apriltag
 
@@ -12,11 +13,19 @@ def main():
     width = 640
     height = 480
     fps = 30
-    mtx = np.array([[669.76134921, 0., 364.47532344],
-                    [0., 669.8613114, 225.14641631],
-                    [0., 0., 1.]])
-    dist = np.array([[0.09899272, -0.34263704, 0.00170763,  0.01447023,  1.06025138]])
-    cap = cv.VideoCapture(0)
+
+    with open('camera.json', 'r') as jsonfile:
+        camera_data = json.load(jsonfile)
+    # setting the cameara matrix
+    # mtx = np.array([[669.76134921, 0., 364.47532344],
+    #                 [0., 669.8613114, 225.14641631],
+    #                 [0., 0., 1.]])
+    mtx = np.array(camera_data['mtx'])
+    dist = np.array(camera_data['dist'])
+    # dist = np.array(
+    #     [[0.09899272, -0.34263704, 0.00170763,  0.01447023,  1.06025138]])
+    # dist = np.array([[0., 0., 0., 0., 0.]])
+    cap = cv.VideoCapture(1)
     cap.set(5, fps)
     cap.set(3, width)
     cap.set(4, height)
@@ -59,4 +68,11 @@ def main():
     cv.destroyAllWindows()
 
 
-main()
+def demo():
+    pass
+
+
+if __name__ == '__main__':
+    main()
+else:
+    demo()

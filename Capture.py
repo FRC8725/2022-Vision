@@ -2,7 +2,14 @@ import cv2 as cv
 import numpy as np
 import time
 
+width = 640
+height = 480
+fps = 30
+
 cap = cv.VideoCapture(0)
+cap.set(5, fps)
+cap.set(3, width)
+cap.set(4, height)
 
 while True:
     start_time = time.time_ns()
