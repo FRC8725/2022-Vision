@@ -9,14 +9,13 @@ import Apriltag
 
 
 def main():
-    width = 1280
-    height = 720
+    width = 640
+    height = 480
     fps = 30
     mtx = np.array([[669.76134921, 0., 364.47532344],
                     [0., 669.8613114, 225.14641631],
                     [0., 0., 1.]])
-    dist = np.array(
-        [[0.09899272, -0.34263704, 0.00170763,  0.01447023,  1.06025138]])
+    dist = np.array([[0.09899272, -0.34263704, 0.00170763,  0.01447023,  1.06025138]])
     cap = cv.VideoCapture(0)
     cap.set(5, fps)
     cap.set(3, width)
@@ -42,7 +41,7 @@ def main():
 
         output_img = AprilTagBox.findTags(output_img)
 
-        print(output_img)
+        # print(output_img)
 
         pocessing_time = time.time() - start_time
         fps = 1/pocessing_time
