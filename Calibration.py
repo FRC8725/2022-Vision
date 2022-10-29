@@ -14,6 +14,13 @@ imgpoints = []
 
 imgs = glob('./imgs/*.jpg')
 
+with open('camera.json', 'r') as jsonfile:
+    camera_data = json.load(jsonfile)
+
+width = camera_data['width']
+height = camera_data['height']
+fps = camera_data['fps']
+
 for fname in imgs:
 
     img = cv.imread(fname)
@@ -32,12 +39,11 @@ for fname in imgs:
         # cv.imshow('img', img)
         # cv.waitKey(500)
 
-ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(
-    objpoints, imgpoints, gray.shape[::-1], None, None)
+ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 
 camera = {}
 
-
+# Changing nparray into python list 
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):
@@ -45,7 +51,7 @@ class NumpyEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-for variable in ['ret', 'mtx', 'dist', 'rvecs', 'tvecs']:
+for variable in ['width', 'height', 'fps',  'ret', 'mtx', 'dist', 'rvecs', 'tvecs']:
     camera[variable] = eval(variable)
 
 with open('camera.json', 'w') as f:

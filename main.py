@@ -10,23 +10,23 @@ import Apriltag
 
 
 def main():
-    width = 640
-    height = 480
-    
     with open('camera.json', 'r') as jsonfile:
         camera_data = json.load(jsonfile)
-    # setting the cameara matrix
-    # mtx = np.array([[669.76134921, 0., 364.47532344],
-    #                 [0., 669.8613114, 225.14641631],
-    #                 [0., 0., 1.]])
+
+    width = camera_data['width']
+    height = camera_data['height']
+    fps = camera_data['fps']
     mtx = np.array(camera_data['mtx'])
     dist = np.array(camera_data['dist'])
+    
+    CameraServer.enableLogging()
 
-    CameraServer.startAutomaticCapture(1)
+    camera = CameraServer.startAutomaticCapture(0)
+    camera.setResolution(width, height)
     
     AprilTagBox = Apriltag.BoxDefination()
 #
-    input_stream = CameraServer.getVideo
+    input_stream = camera.getVideo()
     output_stream = CameraServer.putVideo('Processed', width, height)
 
     vision_nt = NetworkTables.getTable("Vision")
@@ -34,6 +34,7 @@ def main():
     img = np.zeros(shape=(480, 640, 3), dtype=np.uint8)
 
     while True:
+        team_color = NetworkTables.getTable("team_color")
         start_time = time.time()
 
         frame_time, input_img = input_stream.grabFrame(img)

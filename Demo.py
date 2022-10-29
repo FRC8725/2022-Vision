@@ -7,12 +7,10 @@ import time
 import json
 
 import Apriltag
+import BallDetection as BDetect
 
 
 def main():
-    width = 640
-    height = 480
-    fps = 30
 
     with open('camera.json', 'r') as jsonfile:
         camera_data = json.load(jsonfile)
@@ -20,6 +18,9 @@ def main():
     # mtx = np.array([[669.76134921, 0., 364.47532344],
     #                 [0., 669.8613114, 225.14641631],
     #                 [0., 0., 1.]])
+    width = camera_data['width']
+    height = camera_data['height']
+    fps = camera_data['fps']
     mtx = np.array(camera_data['mtx'])
     dist = np.array(camera_data['dist'])
     # dist = np.array(
@@ -34,7 +35,7 @@ def main():
         print("CAM error")
         exit()
 
-    img = np.zeros(shape=(240, 320, 3), dtype=np.uint8)
+    img = np.zeros(shape=(height, width, 3), dtype=np.uint8)
     output_img = np.copy(img)
 
     AprilTagBox = Apriltag.BoxDefination(mtx, dist)
@@ -48,14 +49,16 @@ def main():
 
         output_img = np.copy(frame)
 
-        output_img = AprilTagBox.findTags(output_img)
+        AprilTagBox.findTags(frame, output_img)
+        # output_img = AprilTagBox.findTags(output_img)[0]
+        
+        BDetect.BallDetection(frame, output_img, 'red');
 
         # print(output_img)
 
         pocessing_time = time.time() - start_time
         fps = 1/pocessing_time
-        cv.putText(output_img, str(round(fps, 1)), (0, 40),
-                   cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255))
+        cv.putText(output_img, str(round(fps, 1)), (0, 40), cv.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255))
         cv.imshow("processing", output_img)
 
         if cv.waitKey(1) == ord('p'):
@@ -67,10 +70,8 @@ def main():
     cap.release()
     cv.destroyAllWindows()
 
-
 def demo():
     pass
-
 
 if __name__ == '__main__':
     main()

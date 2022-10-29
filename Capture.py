@@ -1,10 +1,14 @@
 import cv2 as cv
 import numpy as np
 import time
+import json
 
-width = 640
-height = 480
-fps = 30
+with open('camera.json', 'r') as jsonfile:
+    camera_data = json.load(jsonfile)
+
+width = camera_data['width']
+height = camera_data['height']
+fps = camera_data['fps']
 
 cap = cv.VideoCapture(0)
 cap.set(5, fps)

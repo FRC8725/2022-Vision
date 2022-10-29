@@ -13,17 +13,16 @@ class BoxDefination():
             [[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
         self.tag_size = 0.2
 
-    def findTags(self, img):
-        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    def findTags(self, img, canva):
+        imgc = np.copy(img)
+        gray = cv.cvtColor(imgc, cv.COLOR_BGR2GRAY)
         tags = self.dectector.detect(gray, estimate_tag_pose=True, camera_params=self.camera_params, tag_size=0.2)
         if tags == None:
-            return img
+            return None
+        
+        data = []
 
         for tag in tags:
-
-            # basic setup
-            criteria = (cv.TERM_CRITERIA_EPS +
-                        cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
             objp = np.zeros((6*9, 3), np.float32)
             objp[:, :2] = np.mgrid[0:9, 0:6].T.reshape(-1, 2)
@@ -39,13 +38,13 @@ class BoxDefination():
             ptC = (int(ptC[0]), int(ptC[1]))
             ptD = (int(ptD[0]), int(ptD[1]))
 
-            cv.line(img, ptA, ptB, (0, 255, 0), 2)
-            cv.line(img, ptB, ptC, (0, 255, 0), 2)
-            cv.line(img, ptC, ptD, (0, 255, 0), 2)
-            cv.line(img, ptD, ptA, (0, 255, 0), 2)
+            cv.line(canva, ptA, ptB, (0, 255, 0), 2)
+            cv.line(canva, ptB, ptC, (0, 255, 0), 2)
+            cv.line(canva, ptC, ptD, (0, 255, 0), 2)
+            cv.line(canva, ptD, ptA, (0, 255, 0), 2)
 
             center = (np.int32(tag.center[0]), np.int32(tag.center[1]))
-            cv.circle(img, center, 5, (0, 0, 255), -1)
+            cv.circle(canva, center, 5, (0, 0, 255), -1)
 
             pose_R = tag.pose_R
             pose_t = tag.pose_t
@@ -56,8 +55,7 @@ class BoxDefination():
             # print("----------------------------")
 
             corner = self.tag_size/2
-            objPoints = np.array(
-                [[corner, 0, 0], [0, corner, 0], [0, 0, -corner], [0, 0, 0]])
+            objPoints = np.array([[corner, 0, 0], [0, corner, 0], [0, 0, -corner], [0, 0, 0]])
 
             r11 = pose_R[0][0]
             r12 = pose_R[0][1]
@@ -75,7 +73,7 @@ class BoxDefination():
             AprilTagX = pose_t[0][0]
             AprilTagY = pose_t[1][0]
             AprilTagZ = pose_t[2][0]
-
+            
             rvec = [[r11, r12, r13],
                     [r21, r22, r23],
                     [r31, r32, r33]]
@@ -84,18 +82,16 @@ class BoxDefination():
             tvec = [[AprilTagX, AprilTagY, AprilTagZ]]
             tvec = np.array(tvec)
 
-            cv.putText(img, f'{tagID}', center,
-                       cv.FONT_HERSHEY_SIMPLEX, 5, (0, 255, 255))
+            cv.putText(canva, f'{tagID}', center, cv.FONT_HERSHEY_SIMPLEX, 5, (0, 255, 255))
 
             # print(AprilTagPitch)
 
             # imgpts = np.zeros((3, 2))
 
-            imgpts, jac = cv.projectPoints(
-                objPoints, rvec, tvec, self.mtx, self.dist)
+            imgpts, jac = cv.projectPoints(objPoints, rvec, tvec, self.mtx, self.dist)
             # print(imgpts)
             imgpts = np.array(imgpts, dtype=np.int32)
-            img = self.draw(img, center, imgpts)
+            img = self.draw(canva, center, imgpts)
 
             rX = self.convertData2Measurement(AprilTagX)
             rY = self.convertData2Measurement(AprilTagY)
@@ -103,8 +99,10 @@ class BoxDefination():
 
             # print(rX, rY, rZ)
             # print(AprilTagYaw, AprilTagPitch, AprilTagRoll)
-
-        return img
+            
+            data.append([rX, rY, rZ, AprilTagPitch, AprilTagRoll, AprilTagYaw])
+            
+        return data
 
     def convertData2Measurement(self, data):
         return data/0.64*50
@@ -116,7 +114,7 @@ class BoxDefination():
         return img
 
     def findBox(self, img):
-        results = self.detector.detect(img)
+        results = self.findTags(img)
         pass
     
     def findPosition(self, img):
