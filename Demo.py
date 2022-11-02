@@ -6,7 +6,7 @@ import numpy as np
 import time
 import json
 
-import Apriltag
+import src.calTags as calTags
 import BallDetection as BDetect
 
 
@@ -38,7 +38,7 @@ def main():
     img = np.zeros(shape=(height, width, 3), dtype=np.uint8)
     output_img = np.copy(img)
 
-    AprilTagBox = Apriltag.BoxDefination(mtx, dist)
+    AprilTagBox = calTags.AprilTagsDefination(mtx, dist)
 
     while True:
         start_time = time.time()

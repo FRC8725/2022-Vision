@@ -63,6 +63,7 @@ def BallDetection(img, canva, team_color):
             if r > 15 and cntArea > cA*.7:
                 cv.circle(canva,(int(x), int(y)), int(r), (0, 255, 0), 3)
                 # Different object has its different factors
+                # for 640*480
                 if cv.waitKey(1) == ord('p'):
                     print(2*r)
                     print(x-320)
@@ -72,7 +73,7 @@ def BallDetection(img, canva, team_color):
                 hdis = (x-320)*5/138 * distance / 20
                 angle = degrees(atan(hdis/distance))
                 
-                print('dis:',distance, angle, end='\r')
+                print('dis:',distance, 'angle', angle, end='\r')
             # cv.drawContours(canva, cnt, -1, (0, 255, 0), 3)
     #----------------------------------------------------------#
     

@@ -1,22 +1,24 @@
 import pupil_apriltags as apriltag
+# import apriltag
 import cv2 as cv
 import numpy as np
 from math import degrees, atan, sqrt
 
-class BoxDefination():
+class AprilTagsDefination():
     def __init__(self, mtx, dist):
         self.mtx = mtx
         self.camera_params = [mtx[0][0], mtx[1][1], mtx[0][2], mtx[1][2]]
         self.dectector = apriltag.Detector(families="tag36h11")
+        # self.dectector = apriltag.Detector()
         self.dist = dist
-        self.axis = np.float32(
-            [[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
+        self.axis = np.float32([[3, 0, 0], [0, 3, 0], [0, 0, -3]]).reshape(-1, 3)
         self.tag_size = 0.2
 
     def findTags(self, img, canva):
         imgc = np.copy(img)
         gray = cv.cvtColor(imgc, cv.COLOR_BGR2GRAY)
         tags = self.dectector.detect(gray, estimate_tag_pose=True, camera_params=self.camera_params, tag_size=0.2)
+        # tags = self.dectector.detect(gray, tag_size=0.2)
         if tags == None:
             return None
         
@@ -28,8 +30,8 @@ class BoxDefination():
             objp[:, :2] = np.mgrid[0:9, 0:6].T.reshape(-1, 2)
             # meshgrid -> transpose -> reshape(non-restriction, 2)
 
-            objpoints = []
-            imgpoints = []
+            # objpoints = []
+            # imgpoints = []
 
             (ptA, ptB, ptC, ptD) = tag.corners
             # print(tag.corners)
@@ -38,13 +40,7 @@ class BoxDefination():
             ptC = (int(ptC[0]), int(ptC[1]))
             ptD = (int(ptD[0]), int(ptD[1]))
 
-            cv.line(canva, ptA, ptB, (0, 255, 0), 2)
-            cv.line(canva, ptB, ptC, (0, 255, 0), 2)
-            cv.line(canva, ptC, ptD, (0, 255, 0), 2)
-            cv.line(canva, ptD, ptA, (0, 255, 0), 2)
-
             center = (np.int32(tag.center[0]), np.int32(tag.center[1]))
-            cv.circle(canva, center, 5, (0, 0, 255), -1)
 
             pose_R = tag.pose_R
             pose_t = tag.pose_t
@@ -81,8 +77,7 @@ class BoxDefination():
             # tvec = [[pose_R[3][0], pose_R[3][1], pose_R[3][2]]]
             tvec = [[AprilTagX, AprilTagY, AprilTagZ]]
             tvec = np.array(tvec)
-
-            cv.putText(canva, f'{tagID}', center, cv.FONT_HERSHEY_SIMPLEX, 5, (0, 255, 255))
+            
 
             # print(AprilTagPitch)
 
@@ -91,20 +86,28 @@ class BoxDefination():
             imgpts, jac = cv.projectPoints(objPoints, rvec, tvec, self.mtx, self.dist)
             # print(imgpts)
             imgpts = np.array(imgpts, dtype=np.int32)
-            img = self.draw(canva, center, imgpts)
 
-            rX = self.convertData2Measurement(AprilTagX)
-            rY = self.convertData2Measurement(AprilTagY)
-            rZ = self.convertData2Measurement(AprilTagZ)
+            rX = self.Data2Measurement(AprilTagX)
+            rY = self.Data2Measurement(AprilTagY)
+            rZ = self.Data2Measurement(AprilTagZ)
 
             # print(rX, rY, rZ)
             # print(AprilTagYaw, AprilTagPitch, AprilTagRoll)
+            
+            if canva is not None:
+                cv.putText(canva, f'{tagID}', center, cv.FONT_HERSHEY_SIMPLEX, 5, (0, 255, 255))
+                img = self.draw(canva, center, imgpts)
+                cv.circle(canva, center, 5, (0, 0, 255), -1)
+                cv.line(canva, ptA, ptB, (0, 255, 0), 2)
+                cv.line(canva, ptB, ptC, (0, 255, 0), 2)
+                cv.line(canva, ptC, ptD, (0, 255, 0), 2)
+                cv.line(canva, ptD, ptA, (0, 255, 0), 2)
             
             data.append([rX, rY, rZ, AprilTagPitch, AprilTagRoll, AprilTagYaw])
             
         return data
 
-    def convertData2Measurement(self, data):
+    def Data2Measurement(self, data):
         return data/0.64*50
 
     def draw(self, img, center, imgpts):
