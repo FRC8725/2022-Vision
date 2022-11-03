@@ -9,6 +9,7 @@ class AprilTagsDefination():
         self.mtx = mtx
         self.camera_params = [mtx[0][0], mtx[1][1], mtx[0][2], mtx[1][2]]
         options = apriltag.DetectorOptions(families='tag36h11')
+        # self.dectector = apriltag.Detector(families='tag36h11')
         self.dectector = apriltag.Detector(options)
         
         # self.dectector = apriltag.Detector()
@@ -28,8 +29,8 @@ class AprilTagsDefination():
 
         for tag in tags:
 
-            objp = np.zeros((2*2,3), np.float32)
-            objp[:,:2] = np.mgrid[0:2,0:2].T.reshape(-1,2)
+            # objp = np.zeros((2*2,3), np.float32)
+            # objp[:,:2] = np.mgrid[0:2,0:2].T.reshape(-1,2)
             objp = [[0., 0., 0.],
                     [self.tag_size, 0., 0.],
                     [0., self.tag_size, 0.],
@@ -72,7 +73,11 @@ class AprilTagsDefination():
             # tvec = np.array(tvec)
             # criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
             # corners2 = cv.cornerSubPix(gray,tag.corners,(11,11),(-1,-1),criteria)
-            ret, rvec, tvec = cv.solvePnP(np.array(objp, dtype=np.float32), np.array([list(ptA), list(ptB), list(ptD), list(ptC)], np.float32), self.mtx, self.dist)           
+            ret, rvec, tvec = cv.solvePnP(np.array(objp, np.float32), np.array([list(ptA), list(ptB), list(ptD), list(ptC)], np.float32), self.mtx, self.dist)           
+            rmtx = np.zeros((3,3), np.float32)
+            rmtx, _ = cv.Rodrigues(rvec)
+            print(rmtx)
+            print('-----------------------------------')
 
             # print(AprilTagPitch)
 
@@ -82,17 +87,17 @@ class AprilTagsDefination():
             # print(imgpts)
             imgpts = np.array(imgpts, dtype=np.int32)
             
-            print(rvec)
+            # print(rvec)
             
-            r11 = rvec[0][0]
-            # r12 = rvec[0][1]
-            # r13 = rvec[0][2]
-            r21 = rvec[1][0]
-            # r22 = rvec[1][1]
-            # r23 = rvec[1][2]
-            r31 = rvec[2][0]
-            r32 = rvec[2][1]
-            r33 = rvec[2][2]
+            r11 = rmtx[0][0]
+            r12 = rmtx[0][1]
+            r13 = rmtx[0][2]
+            r21 = rmtx[1][0]
+            r22 = rmtx[1][1]
+            r23 = rmtx[1][2]
+            r31 = rmtx[2][0]
+            r32 = rmtx[2][1]
+            r33 = rmtx[2][2]
 
             AprilTagPitch = round(degrees(atan(-r31/sqrt((r32*r32)+(r33*r33)))), 3)
             AprilTagRoll = round(degrees(atan(-r32/r33)), 3)
@@ -110,14 +115,14 @@ class AprilTagsDefination():
             
             if canva is not None:
                 cv.putText(canva, f'{tagID}', center, cv.FONT_HERSHEY_SIMPLEX, 5, (0, 255, 255))
-                img = self.draw(canva, center, imgpts)
                 cv.circle(canva, center, 5, (0, 0, 255), -1)
                 cv.line(canva, ptA, ptB, (0, 255, 0), 2)
                 cv.line(canva, ptB, ptC, (0, 255, 0), 2)
                 cv.line(canva, ptC, ptD, (0, 255, 0), 2)
                 cv.line(canva, ptD, ptA, (0, 255, 0), 2)
+                img = self.draw(canva, center, imgpts)
             
-            data.append([rX, rY, rZ, AprilTagPitch, AprilTagRoll, AprilTagYaw])
+            # data.append([rX, rY, rZ, AprilTagPitch, AprilTagRoll, AprilTagYaw])
             
         return data
 

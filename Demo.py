@@ -1,13 +1,20 @@
-from cscore import CameraServer
-from networktables import NetworkTables
+# from cscore import CameraServer
+# from networktables import NetworkTables
 
 import cv2 as cv
 import numpy as np
 import time
 import json
 
-import src.calTags as calTags
+import calTags as calTags
 import BallDetection as BDetect
+
+def scaleCameraMtx(widthA, widthB, mtx):
+    scale = widthB / widthA
+    mtx[0][0] *= scale
+    mtx[1][1] *= scale
+    mtx[0][2] *= scale
+    mtx[1][2] *= scale
 
 
 def main():
@@ -23,6 +30,11 @@ def main():
     fps = camera_data['fps']
     mtx = np.array(camera_data['mtx'])
     dist = np.array(camera_data['dist'])
+    
+    scaleCameraMtx(640, 320, mtx)
+    
+    width = 320
+    height = 240
     # dist = np.array(
     #     [[0.09899272, -0.34263704, 0.00170763,  0.01447023,  1.06025138]])
     # dist = np.array([[0., 0., 0., 0., 0.]])

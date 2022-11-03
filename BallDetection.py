@@ -15,11 +15,11 @@ def BallDetection(img, canva, team_color):
     hsv = cv.cvtColor(blurred, cv.COLOR_BGR2HSV)
     
     if (team_color == 'red'):
-        lThreshold = np.array([0, 150, 150])
-        hThreshold = np.array([30, 255, 255])
+        lThreshold = np.array([0, 20, 20])
+        hThreshold = np.array([10, 255, 255])
     else:
-        lThreshold = np.array([100, 100, 150])
-        hThreshold = np.array([255, 255, 255])
+        lThreshold = np.array([105, 20, 20])
+        hThreshold = np.array([120, 255, 255])
         
     mask = cv.inRange(hsv, lThreshold, hThreshold)
     mask = cv.erode(mask, None, iterations=2)
@@ -27,7 +27,7 @@ def BallDetection(img, canva, team_color):
     only_tc = cv.bitwise_and(img, img, mask=mask)
     gray = cv.cvtColor(only_tc, cv.COLOR_BGR2GRAY)
     
-    cv.imshow('threshold', mask)
+    # cv.imshow('threshold', mask)
     
     #-----------------------------------------------------------#
     h,  w = img.shape[:2]
@@ -60,7 +60,7 @@ def BallDetection(img, canva, team_color):
             cA = r**2*np.pi
             # M = cv.moments(cnt)
             # center = (int(M['m10']/M['m00']), int(M['m01']/M['m00']))
-            if r > 15 and cntArea > cA*.7:
+            if r > 25 and cntArea > cA*.7:
                 cv.circle(canva,(int(x), int(y)), int(r), (0, 255, 0), 3)
                 # Different object has its different factors
                 # for 640*480

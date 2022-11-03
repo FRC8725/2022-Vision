@@ -9,6 +9,7 @@ import json
 import sys
 
 import calTags
+import BallDetection as BDetect
 
 configFile = "/boot/frc.json"
 
@@ -75,23 +76,51 @@ def readConfig():
 
     return True
 
+def scaleCameraMtx(widthA, widthB, mtx):
+    scale = widthB / widthA
+    mtx[0][0] *= scale
+    mtx[1][1] *= scale
+    mtx[0][2] *= scale
+    mtx[1][2] *= scale
+    
+class CameraConfig: pass
 
 def main():
+    global configFile
     
     with open('camera.json', 'r') as jsonfile:
         camera_data = json.load(jsonfile)
+        
+    with open(configFile, 'r') as j:
+        config = json.load(j)
 
-    width = camera_data['width']
-    height = camera_data['height']
-    fps = camera_data['fps']
+    widthbase = camera_data['width']
+    heightbase = camera_data['height']
+    fpsbase = camera_data['fps']
     mtx = np.array(camera_data['mtx'])
     dist = np.array(camera_data['dist'])
     
+    cam_configs = config['cameras']
+    for camcfg in cam_configs:
+        cam = CameraConfig()
+        cam.name = camcfg['name']
+        cam.path = camcfg['path']
+        cam.width = camcfg['width']
+        cam.height = camcfg['height']
+        cam.fps = camcfg['fps']
+        cameras.append(cam)
+    
+    width = cameras[0].width
+    height = cameras[0].height
+    fps = cameras[0].fps
+    # width = camera_data['width']
+    # height = camera_data['height']
+    
+    scaleCameraMtx(widthbase, width, mtx)
     CameraServer.enableLogging()
 
     inst = CameraServer.getInstance()
-    camera = UsbCamera(name='rPi Camera 0', path='/dev/video0')
-    camera.setResolution(width, height)
+    camera = UsbCamera(name=cameras[0].name, path=cameras[0].path)
     inst.startAutomaticCapture(camera=camera)
     
     AprilTagBox = calTags.AprilTagsDefination(mtx, dist)
@@ -104,7 +133,6 @@ def main():
     img = np.zeros(shape=(height, width, 3), dtype=np.uint8)
     output_img = np.copy(img)
     
-    global configFile
     if len(sys.argv) >= 2:
         configFile = sys.argv[1]
 
@@ -121,6 +149,8 @@ def main():
         ntinst.startClientTeam(team)
         ntinst.startDSClient()
 
+    vision_nt = ntinst.getTable('Vision')
+    
     while True:
         # team_color = NetworkTables.getTable("team_color")
         start_time = time.time()
@@ -134,6 +164,7 @@ def main():
             continue
         
         AprilTagBox.findTags(frame, output_img)
+        BDetect.BallDetection(frame, output_img, 'red');
 
         pocessing_time = time.time() - start_time
         fps = 1/pocessing_time
@@ -142,7 +173,7 @@ def main():
     
         output_stream.putFrame(output_img)
         # cv.imshow('ttt', frame)
-        # vision_nt.putNumber("TestFPS", fps)
+        vision_nt.putNumber("TestFPS", fps)
         
 if __name__ == '__main__': 
     main()
