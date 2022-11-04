@@ -34,7 +34,8 @@ class AprilTagsDefination():
             objp = [[0., 0., 0.],
                     [self.tag_size, 0., 0.],
                     [0., self.tag_size, 0.],
-                    [self.tag_size, self.tag_size, 0.]]
+                    [self.tag_size, self.tag_size, 0.], 
+                    [self.tag_size/2, self.tag_size/2, 0.]]
             # meshgrid -> transpose -> reshape(non-restriction, 2)
             
             # objpoints = []
@@ -73,11 +74,11 @@ class AprilTagsDefination():
             # tvec = np.array(tvec)
             # criteria = (cv.TERM_CRITERIA_EPS + cv.TERM_CRITERIA_MAX_ITER, 30, 0.001)
             # corners2 = cv.cornerSubPix(gray,tag.corners,(11,11),(-1,-1),criteria)
-            ret, rvec, tvec = cv.solvePnP(np.array(objp, np.float32), np.array([list(ptA), list(ptB), list(ptD), list(ptC)], np.float32), self.mtx, self.dist)           
+            ret, rvec, tvec = cv.solvePnP(np.array(objp, np.float32), np.array([list(ptA), list(ptB), list(ptD), list(ptC), list(center)], np.float32), self.mtx, self.dist)           
             rmtx = np.zeros((3,3), np.float32)
             rmtx, _ = cv.Rodrigues(rvec)
-            print(rmtx)
-            print('-----------------------------------')
+            # print(rmtx)
+            # print('-----------------------------------')
 
             # print(AprilTagPitch)
 
@@ -114,7 +115,7 @@ class AprilTagsDefination():
             # print(AprilTagYaw, AprilTagPitch, AprilTagRoll)
             
             if canva is not None:
-                cv.putText(canva, f'{tagID}', center, cv.FONT_HERSHEY_SIMPLEX, 5, (0, 255, 255))
+                cv.putText(canva, f'{tagID}', center, cv.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 255))
                 cv.circle(canva, center, 5, (0, 0, 255), -1)
                 cv.line(canva, ptA, ptB, (0, 255, 0), 2)
                 cv.line(canva, ptB, ptC, (0, 255, 0), 2)
@@ -122,7 +123,7 @@ class AprilTagsDefination():
                 cv.line(canva, ptD, ptA, (0, 255, 0), 2)
                 img = self.draw(canva, center, imgpts)
             
-            # data.append([rX, rY, rZ, AprilTagPitch, AprilTagRoll, AprilTagYaw])
+            data.append([tagID, rX, rY, rZ, AprilTagPitch, AprilTagRoll, AprilTagYaw])
             
         return data
 

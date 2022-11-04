@@ -6,7 +6,7 @@ import numpy as np
 import time
 import json
 
-import calTags as calTags
+import src.calTags as calTags
 import BallDetection as BDetect
 
 def scaleCameraMtx(widthA, widthB, mtx):

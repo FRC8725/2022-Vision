@@ -116,7 +116,10 @@ def main():
     # width = camera_data['width']
     # height = camera_data['height']
     
+    print(mtx)
     scaleCameraMtx(widthbase, width, mtx)
+    print("---")
+    print(mtx)
     CameraServer.enableLogging()
 
     inst = CameraServer.getInstance()
@@ -164,7 +167,7 @@ def main():
             continue
         
         AprilTagBox.findTags(frame, output_img)
-        BDetect.BallDetection(frame, output_img, 'red');
+        BDetect.BallDetection(frame, output_img, '');
 
         pocessing_time = time.time() - start_time
         fps = 1/pocessing_time

@@ -7,6 +7,8 @@ with open('camera.json', 'r') as jsonfile:
     camera_data = json.load(jsonfile)
 mtx = np.array(camera_data['mtx'])
 dist = np.array(camera_data['dist'])
+width = camera_data['width']
+height = camera_data['height']
 ball_width = 0.4
 
 def BallDetection(img, canva, team_color):
@@ -14,20 +16,22 @@ def BallDetection(img, canva, team_color):
     blurred = cv.GaussianBlur(imgc, (11, 11), 0)
     hsv = cv.cvtColor(blurred, cv.COLOR_BGR2HSV)
     
-    if (team_color == 'red'):
+    if (str.lower(team_color) is 'red'):
         lThreshold = np.array([0, 20, 20])
         hThreshold = np.array([10, 255, 255])
-    else:
+    elif str.lower(team_color) is 'blue':
         lThreshold = np.array([105, 20, 20])
         hThreshold = np.array([120, 255, 255])
-        
+    else:
+        lThreshold = np.array([15, 150, 150])
+        hThreshold = np.array([30, 255, 255])
     mask = cv.inRange(hsv, lThreshold, hThreshold)
     mask = cv.erode(mask, None, iterations=2)
     mask = cv.dilate(mask, None, iterations=2)
     only_tc = cv.bitwise_and(img, img, mask=mask)
     gray = cv.cvtColor(only_tc, cv.COLOR_BGR2GRAY)
     
-    # cv.imshow('threshold', mask)
+    cv.imshow('threshold', mask)
     
     #-----------------------------------------------------------#
     h,  w = img.shape[:2]
@@ -49,8 +53,8 @@ def BallDetection(img, canva, team_color):
             
     #----------------------------------------------------------#
     # Method-2
-    
-    cnts, _ = cv.findContours(mask, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+    cv.resize(gray, (width, height))
+    cnts, _ = cv.findContours(gray, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
     distance, angle= -1, -1
     
     for cnt in cnts:
